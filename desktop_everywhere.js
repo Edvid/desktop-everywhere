@@ -14,26 +14,9 @@
 
 "use strict";
 
-let matches = {
-    "m.bart.gov": "bart.gov",
-    "m.clippercard.com": "clippercard.com",
-    "m.facebook.com": "facebook.com",
-    "m.gsmarena.com": "gsmarena.com",
-    "m.imdb.com": "imdb.com",
-    "m.sfgate.com": "sfgate.com",
-    "m.xkcd.com": "xkcd.com",
-    "mobile.lemonde.fr": "lemonde.fr",
-    "mobile.nytimes.com": "nytimes.com",
-    "mobile.twitter.com": "twitter.com"
-};
-
 function listener(details) {
     let uri = new URL(details.url);
-    let newhostname = matches[uri.hostname];
-    if (newhostname !== undefined) {
-        uri.hostname = newhostname
-        return {redirectUrl: uri.href};
-    } else if (uri.hostname.endsWith(".blogspot.com")) {
+    if (uri.hostname.endsWith(".blogspot.com")) {
         for (const [key, value] of uri.searchParams) {
             if (key === "m" && value === "1") {
                 uri.searchParams.delete(key);
@@ -45,6 +28,15 @@ function listener(details) {
         parts.splice(1, 1);
         uri.hostname = parts.join(".");
         return {redirectUrl: uri.href};
+    }
+    else  {
+        let newhostname = uri.hostname.match(/m(obile)?\.([a-z0-9]*?\.)+[a-z]{1,3}$/i);
+        if (newhostname !== null) {
+            let parts = uri.hostname.split(".");
+            parts.splice(0, 1);
+            uri.hostname = parts.join(".");
+            return {redirectUrl: uri.href};
+        }
     }
     return {};
 }
